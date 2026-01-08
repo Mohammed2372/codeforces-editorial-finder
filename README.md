@@ -10,6 +10,7 @@ CLI tool for extracting editorials/tutorials for Codeforces problems using OpenA
 
 - Automatic editorial search for Codeforces problems
 - AI-powered parsing (GPT-4o) - adapts to website structure changes
+- JavaScript rendering for dynamic content (handles lazy-loaded editorials)
 - Supports HTML and PDF formats
 - Extracts specific problem solutions from general editorials
 - Markdown-formatted output with caching
@@ -24,6 +25,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 git clone https://github.com/deyna256/codeforces-editorial-finder.git
 cd codeforces-editorial-finder
 uv sync
+
+# Install Playwright browsers (required for JavaScript rendering)
+uv run playwright install chromium
 ```
 
 ## Configuration
@@ -38,6 +42,7 @@ OPENAI_API_KEY=sk-xxxxx
 OPENAI_MODEL=gpt-4o              # Default: gpt-4o
 CACHE_DIR=~/.cache/codeforces-editorial
 CACHE_TTL_HOURS=168              # 7 days
+HTTP_JS_WAIT=5000                # JS content wait time (ms)
 LOG_LEVEL=INFO
 ```
 
