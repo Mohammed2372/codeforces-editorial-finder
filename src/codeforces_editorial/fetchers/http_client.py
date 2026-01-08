@@ -14,6 +14,10 @@ from tenacity import (
 from codeforces_editorial.config import get_settings
 from codeforces_editorial.utils.exceptions import NetworkError, ProblemNotFoundError
 
+# Lazy import for playwright to avoid loading it if not needed
+_playwright = None
+_browser_context = None
+
 
 class HTTPClient:
     """HTTP client with retry logic and error handling."""
@@ -130,6 +134,52 @@ class HTTPClient:
         """
         response = self.get(url)
         return response.headers.get("content-type", "").lower()
+
+    def get_text_with_js(self, url: str, wait_time: int = 3000) -> str:
+        """
+        Fetch URL with JavaScript rendering (for dynamic content).
+
+        This method uses a headless browser to load the page and wait for
+        dynamic content to load. Use this for pages that load content via JavaScript.
+
+        Args:
+            url: URL to fetch
+            wait_time: Time to wait for content to load (milliseconds), default 3000ms
+
+        Returns:
+            Rendered page HTML content
+
+        Raises:
+            NetworkError: If fetching fails
+        """
+        logger.info(f"Fetching URL with JS rendering: {url} (wait: {wait_time}ms)")
+
+        try:
+            from playwright.sync_api import sync_playwright
+
+            with sync_playwright() as p:
+                # Launch browser in headless mode
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page(user_agent=self.user_agent)
+
+                # Navigate to page
+                page.goto(url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
+
+                # Wait for dynamic content to load
+                page.wait_for_timeout(wait_time)
+
+                # Get rendered HTML
+                content = page.content()
+
+                # Cleanup
+                browser.close()
+
+                logger.info(f"Successfully fetched URL with JS: {url} ({len(content)} chars)")
+                return content
+
+        except Exception as e:
+            logger.error(f"Failed to fetch URL with JS rendering: {url} - {e}")
+            raise NetworkError(f"Failed to fetch {url} with JS rendering: {e}") from e
 
 
 def create_http_client() -> HTTPClient:
