@@ -82,7 +82,7 @@ class OpenAIClient:
 
             return response_text
 
-        except openai.RateLimitError as e:
+        except openai.RateLimitError:
             logger.warning("Rate limit hit, retrying...")
             raise  # Let tenacity retry
 
@@ -120,7 +120,7 @@ class OpenAIClient:
                 max_tokens=500,
                 temperature=0.0,
                 system="You are a helpful assistant that extracts URLs from HTML content. "
-                       "Return only the URL, nothing else.",
+                "Return only the URL, nothing else.",
             )
 
             response = response.strip()
@@ -177,7 +177,7 @@ class OpenAIClient:
                 max_tokens=8000,
                 temperature=0.0,
                 system="You are an expert at analyzing competitive programming editorials. "
-                       "Extract and structure the solution information clearly and accurately.",
+                "Extract and structure the solution information clearly and accurately.",
             )
 
             logger.info(f"Successfully extracted solution ({len(response)} chars)")
