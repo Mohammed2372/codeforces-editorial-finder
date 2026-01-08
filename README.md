@@ -1,88 +1,63 @@
 # Codeforces Editorial Finder
 
-A CLI tool for automatically extracting editorial/tutorial solutions for Codeforces problems using OpenAI API.
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+CLI tool for extracting editorials/tutorials for Codeforces problems using OpenAI API.
 
 ## Features
 
-- Automatic search for editorial/tutorial for Codeforces problems
-- Uses OpenAI API (GPT-4o) for adaptive parsing (independent of website structure changes)
-- Supports HTML and PDF tutorial formats
-- Extracts solutions for specific problems from general editorials
-- Formatted output in Markdown
-- Result caching to save API calls
-- Modular architecture with separation of concerns
+- Automatic editorial search for Codeforces problems
+- AI-powered parsing (GPT-4o) - adapts to website structure changes
+- Supports HTML and PDF formats
+- Extracts specific problem solutions from general editorials
+- Markdown-formatted output with caching
 
 ## Installation
 
-### Requirements
-
-- Python 3.10+
-- OpenAI API key (get one at https://platform.openai.com/api-keys)
-
-### Install from source
-
 ```bash
-# Clone the repository
+# Install uv (if needed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install
 git clone https://github.com/deyna256/codeforces-editorial-finder.git
 cd codeforces-editorial-finder
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Or use pip install in dev mode
-pip install -e .
+uv sync
 ```
 
 ## Configuration
 
-Create a `.env` file in the project root (use `.env.example` as a template):
+Create a `.env` file:
 
 ```bash
-# OpenAI API
+# Required
 OPENAI_API_KEY=sk-xxxxx
-OPENAI_MODEL=gpt-4o
 
-# Cache (optional)
+# Optional
+OPENAI_MODEL=gpt-4o              # Default: gpt-4o
 CACHE_DIR=~/.cache/codeforces-editorial
-CACHE_TTL_HOURS=168
-
-# HTTP (optional)
-HTTP_TIMEOUT=30
-HTTP_RETRIES=3
-
-# Logging (optional)
+CACHE_TTL_HOURS=168              # 7 days
 LOG_LEVEL=INFO
 ```
 
 ## Usage
 
-### Basic usage
-
 ```bash
-# Using the installed command
+# Basic usage
 codeforces-editorial https://codeforces.com/contest/1234/problem/A
 
-# Or as a Python module
-python -m codeforces_editorial https://codeforces.com/contest/1234/problem/A
-```
-
-### Command line options
-
-```bash
 # Save to file
-codeforces-editorial https://codeforces.com/contest/1234/problem/A -o solution.md
+codeforces-editorial <url> -o solution.md
 
 # Ignore cache
-codeforces-editorial https://codeforces.com/contest/1234/problem/A --no-cache
+codeforces-editorial <url> --no-cache
 
 # Clear cache before running
-codeforces-editorial https://codeforces.com/contest/1234/problem/A --clear-cache
+codeforces-editorial <url> --clear-cache
 
-# Verbose mode
-codeforces-editorial https://codeforces.com/contest/1234/problem/A -v
-
-# Specify API key via argument
-codeforces-editorial https://codeforces.com/contest/1234/problem/A --api-key sk-xxxxx
+# Verbose output
+codeforces-editorial <url> -v
 ```
 
 ### Supported URL formats
@@ -94,153 +69,53 @@ https://codeforces.com/gym/102345/problem/A
 https://codeforces.ru/contest/1234/problem/A
 ```
 
-## Architecture
-
-The project consists of modular components:
-
-### Modules
-
-- **parsers/** - Parsing URLs, problem pages, and tutorials
-  - `url_parser.py` - Parse and validate Codeforces URLs
-  - `problem_page.py` - Extract data from problem pages
-  - `tutorial_parser.py` - Parse HTML and PDF tutorials
-
-- **fetchers/** - Content loading
-  - `http_client.py` - HTTP client with retry logic
-  - `tutorial_finder.py` - Find editorial links via OpenAI API
-
-- **openai/** - OpenAI API integration
-  - `client.py` - Wrapper for OpenAI SDK
-  - `prompts.py` - Prompts for various tasks
-
-- **claude/** - Claude API integration (legacy, optional)
-  - `client.py` - Wrapper for Anthropic SDK
-  - `prompts.py` - Prompts for various tasks
-
-- **extractors/** - Extraction and formatting
-  - `editorial_extractor.py` - Extract solutions via OpenAI API
-  - `markdown_formatter.py` - Format as Markdown
-
-- **Core modules**
-  - `orchestrator.py` - Coordinate all modules
-  - `cache.py` - Caching system
-  - `config.py` - Configuration management
-  - `models.py` - Data classes
-
-### Execution flow
-
-```
-1. URL Parsing → extract contest_id, problem_id
-2. Cache Check → check if cached
-3. Problem Page → load problem page
-4. Find Editorial → search for link via OpenAI API
-5. Load Tutorial → download HTML/PDF editorial
-6. Extract Solution → extract solution via OpenAI API
-7. Format Markdown → format result
-8. Cache Save → save to cache
-9. Output → display to user
-```
-
-## Example output
-
-Editorials are formatted as readable Markdown:
-
-```markdown
-# Problem 1234A: Problem Title
-
-## Problem Link
-[https://codeforces.com/contest/1234/problem/A](...)
-
-## Approach
-Brief description of the approach...
-
-## Complexity
-- **Time**: O(n)
-- **Space**: O(1)
-
-## Solution
-Detailed solution explanation...
-
-## Code
-```cpp
-// Solution code
-```
-
----
-*Generated by codeforces-editorial-finder*
-*Source: https://codeforces.com/blog/entry/...*
-```
-
 ## Development
 
-### Project structure
-
-```
-codeforces-editorial-finder/
-├── src/codeforces_editorial/
-│   ├── __main__.py
-│   ├── cli.py
-│   ├── orchestrator.py
-│   ├── config.py
-│   ├── cache.py
-│   ├── models.py
-│   ├── parsers/
-│   ├── fetchers/
-│   ├── extractors/
-│   ├── openai/
-│   ├── claude/
-│   └── utils/
-├── tests/
-├── .env.example
-├── pyproject.toml
-├── requirements.txt
-└── README.md
-```
-
-### Running tests
-
 ```bash
-# Install dev dependencies
-pip install -e ".[dev]"
+# Install with dev dependencies
+uv sync --group dev
 
 # Run tests
-pytest
+uv run pytest
 
-# With coverage
-pytest --cov=codeforces_editorial
+# Linting and formatting
+just lint      # Check code
+just lint-fix  # Fix issues
+just format    # Format code
+
+# Type checking
+just typecheck
+
+# Build package
+just build
 ```
 
-## Error handling
+## Architecture
 
-The tool provides detailed error messages:
-
-- `URLParseError` - invalid URL format
-- `ProblemNotFoundError` - problem not found (404)
-- `EditorialNotFoundError` - editorial not found
-- `ClaudeAPIError` - API error (used for both OpenAI and Claude APIs)
-- `NetworkError` - network error
-- `CacheError` - cache error
-
-## Caching
-
-By default, results are cached in `~/.cache/codeforces-editorial/` with a TTL of 7 days.
-
-```bash
-# Clear cache
-codeforces-editorial --clear-cache
-
-# Ignore cache for a specific request
-codeforces-editorial <url> --no-cache
 ```
+src/codeforces_editorial/
+├── parsers/           # URL, problem pages, tutorials
+├── fetchers/          # HTTP client, editorial finder
+├── openai/            # OpenAI API integration
+├── extractors/        # Solution extraction
+├── orchestrator.py    # Main workflow coordinator
+├── cache.py           # Result caching
+└── config.py          # Settings management
+```
+
+## Error Handling
+
+- `URLParseError` - Invalid URL format
+- `ProblemNotFoundError` - Problem not found (404)
+- `EditorialNotFoundError` - Editorial not found
+- `OpenAIAPIError` - API error
+- `NetworkError` - Network/HTTP error
+- `CacheError` - Cache operation error
 
 ## License
 
-MIT
+MIT - see LICENSE file
 
 ## Author
 
 [deyna256](https://github.com/deyna256)
-
-## Repository
-
-https://github.com/deyna256/codeforces-editorial-finder
