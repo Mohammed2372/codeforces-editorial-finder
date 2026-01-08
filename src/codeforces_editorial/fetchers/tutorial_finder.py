@@ -120,8 +120,7 @@ class TutorialFinder:
         # Try to search Codeforces for editorial blog posts
         try:
             search_url = (
-                f"https://codeforces.com/search?"
-                f"query=contest+{identifier.contest_id}+tutorial"
+                f"https://codeforces.com/search?query=contest+{identifier.contest_id}+tutorial"
             )
 
             html = self.http.get_text(search_url)
