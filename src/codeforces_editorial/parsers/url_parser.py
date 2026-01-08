@@ -1,7 +1,6 @@
 """Parser for Codeforces problem URLs."""
 
 import re
-from typing import Optional
 from urllib.parse import urlparse
 
 from loguru import logger

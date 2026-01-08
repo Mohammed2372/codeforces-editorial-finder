@@ -1,5 +1,6 @@
 """Parser for Codeforces problem pages."""
 
+import re
 from typing import Optional
 
 from bs4 import BeautifulSoup
@@ -96,7 +97,6 @@ class ProblemPageParser:
                 # Remove problem ID (e.g., "A. " or "1234A. ")
                 title_text = title_div.get_text(strip=True)
                 # Remove leading problem identifier
-                import re
                 title_text = re.sub(r"^[A-Z]\d*\.\s*", "", title_text)
                 return title_text
 
