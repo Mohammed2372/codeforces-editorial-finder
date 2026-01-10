@@ -14,7 +14,7 @@ class URLParser:
 
     # Unified pattern matches: problemset/problem/1234/A
     PATTERN = r"codeforces\.(?:com|ru)/problemset/problem/(\d+)/([A-Z]\d*)"
-    
+
     @classmethod
     def parse(cls, url: str) -> ProblemIdentifier:
         """
@@ -53,7 +53,7 @@ class URLParser:
         """
         Build problem URL from identifier.
         """
-        
+
         url = f"https://codeforces.com/problemset/problem/{identifier.contest_id}/{identifier.problem_id}"
 
         logger.debug(f"Built problem URL: {url}")
