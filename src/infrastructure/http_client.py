@@ -106,7 +106,7 @@ class AsyncHTTPClient:
             Response text content
         """
         response = await self.get(url)
-        return response.text if hasattr(response, 'text') else response.content.decode('utf-8')
+        return response.text if hasattr(response, "text") else response.content.decode("utf-8")
 
     async def get_bytes(self, url: str) -> bytes:
         """
