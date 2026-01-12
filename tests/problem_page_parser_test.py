@@ -56,8 +56,6 @@ SAMPLE_HTML_NO_EDITORIAL = """
 
 @pytest.fixture
 def mock_http_client() -> AsyncMock:
-    """Create a mock HTTP client."""
-
     client = AsyncMock()
     client.get_text.return_value = REALISTIC_HTML
     return client
@@ -115,8 +113,6 @@ async def test_http_error_handling() -> None:
 
 @pytest.mark.asyncio
 async def test_convenience_function(mock_http_client) -> None:
-    """Test the standalone parse_problem function"""
-
     url = "https://codeforces.com/problemset/problem/2183/A"
     data = await parse_problem(url=url, http_client=mock_http_client)
 

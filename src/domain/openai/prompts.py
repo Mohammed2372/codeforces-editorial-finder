@@ -5,14 +5,7 @@ from domain.models import ProblemIdentifier
 
 def get_find_editorial_prompt(contest_html: str, problem_id: str) -> str:
     """
-    Get prompt for finding editorial link in contest page HTML.
-
-    Args:
-        contest_html: HTML content of contest page
-        problem_id: Problem ID to find editorial for
-
-    Returns:
-        Prompt string
+    Build a prompt that instructs OpenAI to locate an editorial link in contest HTML.
     """
     return f"""Find the editorial/tutorial/разбор link for this Codeforces contest.
 
@@ -31,15 +24,8 @@ def get_extract_solution_prompt(
     problem_title: str = "",
 ) -> str:
     """
-    Get prompt for extracting solution for specific problem from tutorial.
-
-    Args:
-        tutorial_content: Tutorial content (HTML or text)
-        identifier: Problem identifier
-        problem_title: Optional problem title for better matching
-
-    Returns:
-        Prompt string
+    Build a structured prompt that guides OpenAI to extract a specific problem’s
+    editorial section from a tutorial.
     """
     problem_ref = f"Problem {identifier.problem_id}"
     if problem_title:
@@ -68,13 +54,7 @@ Tutorial:
 
 def get_parse_pdf_editorial_prompt(problem_id: str) -> str:
     """
-    Get prompt for analyzing PDF editorial.
-
-    Args:
-        problem_id: Problem ID
-
-    Returns:
-        Prompt string
+    Build a prompt instructing OpenAI to extract a problem’s editorial from a PDF.
     """
     return f"""Extract editorial for Problem {problem_id} from this Codeforces PDF.
 
@@ -83,13 +63,7 @@ Find section for Problem {problem_id}. Preserve formatting, code, formulas. Incl
 
 def get_alternative_search_prompt(page_html: str) -> str:
     """
-    Get prompt for alternative editorial search strategies.
-
-    Args:
-        page_html: HTML to search
-
-    Returns:
-        Prompt string
+    Build a prompt for finding possible editorial or solution links on a Codeforces page.
     """
     return f"""Find tutorial/editorial/solution links on this Codeforces page.
 
@@ -102,14 +76,8 @@ HTML:
 
 def get_validate_editorial_prompt(content: str, problem_id: str) -> str:
     """
-    Get prompt to validate if content contains editorial for specific problem.
-
-    Args:
-        content: Content to validate
-        problem_id: Problem ID
-
-    Returns:
-        Prompt string
+    Build a prompt that asks OpenAI to verify whether content contains an editorial
+    for a specific problem.
     """
     return f"""Does this contain editorial for Problem {problem_id}?
 

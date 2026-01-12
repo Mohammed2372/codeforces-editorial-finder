@@ -1,4 +1,4 @@
-"""Tutorial finder using OpenAI API."""
+"""Finds Codeforces tutorial and editorial links using OpenAI and web scraping."""
 
 from typing import Optional
 import re
@@ -16,28 +16,13 @@ class TutorialFinder:
     """Finds tutorial/editorial links for Codeforces problems."""
 
     def __init__(self, ai_client, http_client):
-        """
-        Initialize tutorial finder.
-
-        Args:
-            ai_client: Async OpenAI API client
-            http_client: Async HTTP client
-        """
         self.ai_client = ai_client
         self.http = http_client
 
     async def find_tutorial(self, identifier: ProblemIdentifier) -> str:
         """
-        Find tutorial URL for a problem.
-
-        Args:
-            identifier: Problem identifier
-
-        Returns:
-            Tutorial URL
-
-        Raises:
-            EditorialNotFoundError: If tutorial not found
+        Find a tutorial URL by trying multiple strategies, starting with the contest page
+        and falling back to blog searches if needed.
         """
         logger.info(f"Searching for tutorial for problem {identifier}")
 
@@ -59,13 +44,7 @@ class TutorialFinder:
 
     async def _try_contest_page(self, identifier: ProblemIdentifier) -> Optional[str]:
         """
-        Try to find editorial link on contest main page using OpenAI.
-
-        Args:
-            identifier: Problem identifier
-
-        Returns:
-            Tutorial URL if found, None otherwise
+        Attempt to extract the editorial link from the contest page using OpenAI.
         """
         logger.debug("Strategy 1: Searching contest page for editorial link")
 
@@ -89,13 +68,7 @@ class TutorialFinder:
 
     async def _try_blog_patterns(self, identifier: ProblemIdentifier) -> Optional[str]:
         """
-        Try common blog URL patterns for editorials.
-
-        Args:
-            identifier: Problem identifier
-
-        Returns:
-            Tutorial URL if found, None otherwise
+        Search Codeforces blog pages for likely editorial links using common URL patterns.
         """
         logger.debug("Strategy 2: Trying common blog patterns")
 
@@ -140,13 +113,7 @@ class TutorialFinder:
 
     def _normalize_url(self, url: str) -> str:
         """
-        Normalize URL to full absolute URL.
-
-        Args:
-            url: URL to normalize
-
-        Returns:
-            Normalized URL
+        Convert relative or http URLs into absolute https Codeforces URLs.
         """
         # If relative URL, make it absolute
         if url.startswith("/"):
@@ -164,19 +131,5 @@ async def find_tutorial_url(
     ai_client: Optional[AsyncOpenAIClient] = None,
     http_client: Optional[AsyncHTTPClient] = None,
 ) -> str:
-    """
-    Convenience function to find tutorial URL.
-
-    Args:
-        identifier: Problem identifier
-        ai_client: Optional OpenAI client
-        http_client: Optional HTTP client
-
-    Returns:
-        Tutorial URL
-
-    Raises:
-        EditorialNotFoundError: If tutorial not found
-    """
     finder = TutorialFinder(ai_client, http_client)
     return await finder.find_tutorial(identifier)

@@ -17,8 +17,6 @@ from domain.exceptions import URLParsingError
     ],
 )
 def test_parse_valid_urls(url, expected_contest, expected_problem) -> None:
-    """Test that all valid URL formats are parsed correctly."""
-
     identifier = URLParser.parse(url=url)
 
     assert identifier.contest_id == expected_contest
@@ -27,8 +25,6 @@ def test_parse_valid_urls(url, expected_contest, expected_problem) -> None:
 
 
 def test_parse_invalid_urls() -> None:
-    """Test that invalid URL raise URLParsingError."""
-
     invalid_urls = [
         "not_a_url",  # wrong url
         "https://google.com",  # wrong site
@@ -44,8 +40,6 @@ def test_parse_invalid_urls() -> None:
 
 
 def test_build_problem_url() -> None:
-    """Test that problem URL is built correctly."""
-
     contest_id = ProblemIdentifier(contest_id="1234", problem_id="A", is_gym=False)
     assert (
         URLParser.build_problem_url(identifier=contest_id)
@@ -54,8 +48,6 @@ def test_build_problem_url() -> None:
 
 
 def test_build_contest_url() -> None:
-    """Test that contest URL is built correctly"""
-
     contest_id = ProblemIdentifier(contest_id="1234", problem_id="A", is_gym=False)
     assert (
         URLParser.build_contest_url(identifier=contest_id) == "https://codeforces.com/contest/1234"
@@ -63,8 +55,6 @@ def test_build_contest_url() -> None:
 
 
 def test_parse_convenience_function() -> None:
-    """Test the standalone parse_problem_url function"""
-
     url = "https://codeforces.com/problemset/problem/777/A"
     identifier = parse_problem_url(url)
     assert identifier.contest_id == "777"

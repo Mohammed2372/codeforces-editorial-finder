@@ -20,15 +20,9 @@ _browser_context = None
 
 
 class HTTPClient:
-    """HTTP client with retry logic and error handling."""
-
     def __init__(self, timeout: Optional[int] = None, user_agent: Optional[str] = None):
         """
-        Initialize HTTP client.
-
-        Args:
-            timeout: Request timeout in seconds
-            user_agent: User agent string for requests
+        Initialize the client, using configured timeout and user-agent if not provided.
         """
         settings = get_settings()
         self.timeout = timeout or settings.http_timeout
@@ -42,15 +36,12 @@ class HTTPClient:
         )
 
     def __enter__(self):
-        """Context manager entry."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
         self.close()
 
     def close(self) -> None:
-        """Close the HTTP client."""
         self.client.close()
 
     @retry(
@@ -61,17 +52,8 @@ class HTTPClient:
     )
     def get(self, url: str) -> httpx.Response:
         """
-        Perform GET request with retry logic.
-
-        Args:
-            url: URL to fetch
-
-        Returns:
-            HTTP response
-
-        Raises:
-            ProblemNotFoundError: If resource not found (404)
-            NetworkError: For other network/HTTP errors
+        Fetch a URL with automatic retries and map HTTP errors to domain-specific exceptions.
+        404 responses raise ProblemNotFoundError; other failures raise NetworkError.
         """
         logger.debug(f"Fetching URL: {url}")
 
@@ -97,60 +79,21 @@ class HTTPClient:
             raise NetworkError(f"Failed to fetch {url}: {e}") from e
 
     def get_text(self, url: str) -> str:
-        """
-        Fetch URL and return text content.
-
-        Args:
-            url: URL to fetch
-
-        Returns:
-            Response text content
-        """
         response = self.get(url)
         return response.text
 
     def get_bytes(self, url: str) -> bytes:
-        """
-        Fetch URL and return binary content.
-
-        Args:
-            url: URL to fetch
-
-        Returns:
-            Response binary content
-        """
         response = self.get(url)
         return response.content
 
     def get_content_type(self, url: str) -> str:
-        """
-        Get content type of URL.
-
-        Args:
-            url: URL to check
-
-        Returns:
-            Content-Type header value
-        """
         response = self.get(url)
         return response.headers.get("content-type", "").lower()
 
     def get_text_with_js(self, url: str, wait_time: int = 3000) -> str:
         """
-        Fetch URL with JavaScript rendering (for dynamic content).
-
-        This method uses a headless browser to load the page and wait for
-        dynamic content to load. Use this for pages that load content via JavaScript.
-
-        Args:
-            url: URL to fetch
-            wait_time: Time to wait for content to load (milliseconds), default 3000ms
-
-        Returns:
-            Rendered page HTML content
-
-        Raises:
-            NetworkError: If fetching fails
+        Fetch a page using a headless browser so JavaScript-rendered content can load.
+        Use this for sites that populate data dynamically.
         """
         logger.info(f"Fetching URL with JS rendering: {url} (wait: {wait_time}ms)")
 
@@ -183,5 +126,4 @@ class HTTPClient:
 
 
 def create_http_client() -> HTTPClient:
-    """Create and return a new HTTP client instance."""
     return HTTPClient()

@@ -15,15 +15,9 @@ from domain.exceptions import NetworkError, ProblemNotFoundError
 
 
 class AsyncHTTPClient:
-    """Async HTTP client with retry logic and error handling."""
-
     def __init__(self, timeout: Optional[int] = None, user_agent: Optional[str] = None):
         """
-        Initialize async HTTP client.
-
-        Args:
-            timeout: Request timeout in seconds
-            user_agent: User agent string for requests
+        Initialize the client, falling back to configured timeout and user-agent when not provided.
         """
         settings = get_settings()
         self.timeout = timeout or settings.http_timeout
@@ -34,15 +28,12 @@ class AsyncHTTPClient:
         self.client = AsyncSession()
 
     async def __aenter__(self):
-        """Async context manager entry."""
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
         await self.close()
 
     async def close(self) -> None:
-        """Close the HTTP client."""
         await self.client.close()
 
     @retry(
@@ -52,17 +43,9 @@ class AsyncHTTPClient:
     )
     async def get(self, url: str):
         """
-        Perform GET request with retry logic using curl_cffi.
+        Fetch a URL using curl_cffi with automatic retries and domain-specific error mapping.
 
-        Args:
-            url: URL to fetch
-
-        Returns:
-            HTTP response
-
-        Raises:
-            ProblemNotFoundError: If resource not found (404)
-            NetworkError: For other network/HTTP errors
+        404 responses raise ProblemNotFoundError; other HTTP failures raise NetworkError.
         """
         logger.debug(f"Fetching URL: {url}")
 
@@ -97,59 +80,23 @@ class AsyncHTTPClient:
 
     async def get_text(self, url: str) -> str:
         """
-        Fetch URL and return text content.
-
-        Args:
-            url: URL to fetch
-
-        Returns:
-            Response text content
+        Fetch a URL and return its text body, decoding bytes if needed.
         """
         response = await self.get(url)
         return response.text if hasattr(response, "text") else response.content.decode("utf-8")
 
     async def get_bytes(self, url: str) -> bytes:
-        """
-        Fetch URL and return binary content.
-
-        Args:
-            url: URL to fetch
-
-        Returns:
-            Response binary content
-        """
         response = await self.get(url)
         return response.content
 
     async def get_content_type(self, url: str) -> str:
-        """
-        Get content type of URL.
-
-        Args:
-            url: URL to check
-
-        Returns:
-            Content-Type header value
-        """
         response = await self.get(url)
         return response.headers.get("content-type", "").lower()
 
     async def get_text_with_js(self, url: str, wait_time: int = 3000) -> str:
         """
-        Fetch URL with JavaScript rendering (for dynamic content).
-
-        This method uses a headless browser to load the page and wait for
-        dynamic content to load. Use this for pages that load content via JavaScript.
-
-        Args:
-            url: URL to fetch
-            wait_time: Time to wait for content to load (milliseconds), default 3000ms
-
-        Returns:
-            Rendered page HTML content
-
-        Raises:
-            NetworkError: If fetching fails
+        Fetch a page using a headless browser to allow JavaScript-rendered content to load.
+        Use this for sites that populate data dynamically via JS.
         """
         logger.info(f"Fetching URL with JS rendering: {url} (wait: {wait_time}ms)")
 

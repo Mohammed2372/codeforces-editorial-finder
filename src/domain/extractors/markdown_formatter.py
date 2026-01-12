@@ -1,22 +1,18 @@
-"""Markdown formatter for editorials."""
-
 from domain.models import Editorial, ProblemData
 
 
 class MarkdownFormatter:
-    """Formats editorial as Markdown."""
-
     @staticmethod
     def format(editorial: Editorial, problem: ProblemData) -> str:
         """
-        Format editorial as Markdown.
+        Render an editorial into a Markdown document with a metadata header
+        and attribution footer.
 
-        Args:
-            editorial: Editorial to format
-            problem: Problem data
-
-        Returns:
-            Formatted Markdown string
+        The output includes:
+        - problem and contest identifiers
+        - title and URL
+        - optional editorial source URL
+        - the original solution text without modification
         """
         lines = []
 
@@ -44,14 +40,4 @@ class MarkdownFormatter:
 
 
 def format_editorial_markdown(editorial: Editorial, problem: ProblemData) -> str:
-    """
-    Convenience function to format editorial.
-
-    Args:
-        editorial: Editorial
-        problem: Problem data
-
-    Returns:
-        Markdown string
-    """
     return MarkdownFormatter.format(editorial, problem)

@@ -1,4 +1,4 @@
-"""Async OpenAI API client wrapper."""
+"""Async wrapper around the OpenAI API used for editorial extraction."""
 
 from typing import Optional
 
@@ -12,15 +12,10 @@ from domain.exceptions import OpenAIAPIError
 
 
 class AsyncOpenAIClient:
-    """Async wrapper for OpenAI API with error handling and retry logic."""
-
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         """
-        Initialize async OpenAI client.
-
-        Args:
-            api_key: OpenAI API key (uses settings if None)
-            model: Model to use (uses settings if None)
+        Initialize the client, falling back to configured API key and model.
+        Raises OpenAIAPIError if no API key is available.
         """
         settings = get_settings()
         self.api_key = api_key or settings.openai_api_key
@@ -33,15 +28,12 @@ class AsyncOpenAIClient:
         logger.debug(f"Initialized async OpenAI client with model: {self.model}")
 
     async def close(self) -> None:
-        """Close the OpenAI client."""
         await self.client.close()
 
     async def __aenter__(self):
-        """Async context manager entry."""
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
         await self.close()
 
     @retry(
@@ -57,19 +49,8 @@ class AsyncOpenAIClient:
         system: Optional[str] = None,
     ) -> str:
         """
-        Send message to OpenAI and get response.
-
-        Args:
-            prompt: User prompt
-            max_tokens: Maximum tokens in response
-            temperature: Sampling temperature (0.0 = deterministic)
-            system: Optional system prompt
-
-        Returns:
-            OpenAI's response text
-
-        Raises:
-            OpenAIAPIError: If API call fails
+        Send a chat completion request to OpenAI with automatic retries and
+        convert API failures into OpenAIAPIError.
         """
         logger.debug(f"Sending message to OpenAI (model: {self.model})")
         logger.debug(f"Prompt length: {len(prompt)} chars")
@@ -109,17 +90,8 @@ class AsyncOpenAIClient:
 
     async def find_editorial_link(self, contest_html: str, problem_id: str) -> Optional[str]:
         """
-        Use OpenAI to find editorial link in contest page HTML.
-
-        Args:
-            contest_html: HTML content of contest page
-            problem_id: Problem ID
-
-        Returns:
-            Editorial URL if found, None otherwise
-
-        Raises:
-            OpenAIAPIError: If API call fails
+        Use OpenAI to extract an editorial URL for a given problem from contest page HTML.
+        Returns None if no valid link is found.
         """
         from domain.openai.prompts import get_find_editorial_prompt
 
@@ -159,18 +131,7 @@ class AsyncOpenAIClient:
         problem_title: str = "",
     ) -> dict:
         """
-        Use OpenAI to extract solution from tutorial content.
-
-        Args:
-            tutorial_content: Tutorial content (HTML or text)
-            problem_id: Problem ID
-            problem_title: Optional problem title
-
-        Returns:
-            Dictionary with extracted solution components
-
-        Raises:
-            OpenAIAPIError: If API call fails
+        Use OpenAI to extract and structure a problem solution from tutorial content.
         """
         from domain.openai.prompts import get_extract_solution_prompt
         from domain.models import ProblemIdentifier
@@ -212,17 +173,8 @@ class AsyncOpenAIClient:
         problem_id: str,
     ) -> bool:
         """
-        Validate if content contains editorial for specific problem.
-
-        Args:
-            content: Content to validate
-            problem_id: Problem ID
-
-        Returns:
-            True if content contains editorial for the problem
-
-        Raises:
-            OpenAIAPIError: If API call fails
+        Use OpenAI to check whether content contains an editorial for the given problem.
+        Returns True on API errors to avoid false negatives.
         """
         from domain.openai.prompts import get_validate_editorial_prompt
 

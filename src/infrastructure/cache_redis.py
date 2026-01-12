@@ -1,4 +1,4 @@
-"""Async Redis cache client for editorial data."""
+"""Async Redis client for caching Codeforces editorial data."""
 
 import json
 from typing import Optional
@@ -11,14 +11,9 @@ from domain.exceptions import CacheError
 
 
 class AsyncRedisCache:
-    """Async Redis cache client."""
-
     def __init__(self, redis_url: Optional[str] = None):
         """
-        Initialize async Redis cache.
-
-        Args:
-            redis_url: Redis connection URL (uses config if None)
+        Initialize the cache client, using the configured Redis URL if none is provided.
         """
         settings = get_settings()
         self.redis_url = redis_url or settings.redis_url
@@ -28,7 +23,7 @@ class AsyncRedisCache:
         logger.debug(f"Initialized async Redis cache (URL: {self.redis_url})")
 
     async def connect(self) -> None:
-        """Connect to Redis."""
+        """Establish a Redis connection and verify it by issuing a ping."""
         try:
             self.client = await redis.from_url(
                 self.redis_url,
@@ -43,30 +38,23 @@ class AsyncRedisCache:
             raise CacheError(f"Failed to connect to Redis: {e}") from e
 
     async def close(self) -> None:
-        """Close Redis connection."""
         if self.client:
             await self.client.close()
             logger.debug("Closed Redis connection")
 
     async def __aenter__(self):
-        """Async context manager entry."""
         await self.connect()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
         await self.close()
 
     async def get(self, key: str) -> Optional[dict]:
         """
-        Get value from cache.
-
-        Args:
-            key: Cache key
-
-        Returns:
-            Cached dictionary if found, None otherwise
+        Retrieve a cached value and deserialize it from JSON.
+        Returns None on cache miss or read errors.
         """
+
         if not self.client:
             raise CacheError("Redis client not connected")
 
@@ -86,12 +74,7 @@ class AsyncRedisCache:
 
     async def set(self, key: str, value: dict, ttl: Optional[int] = None) -> None:
         """
-        Set value in cache with TTL.
-
-        Args:
-            key: Cache key
-            value: Dictionary to cache
-            ttl: Time to live in seconds (uses default if None)
+        Store a dictionary in Redis as JSON, applying the default TTL if none is provided.
         """
         if not self.client:
             raise CacheError("Redis client not connected")
@@ -108,12 +91,6 @@ class AsyncRedisCache:
             raise CacheError(f"Failed to cache data: {e}") from e
 
     async def delete(self, key: str) -> None:
-        """
-        Delete key from cache.
-
-        Args:
-            key: Cache key
-        """
         if not self.client:
             raise CacheError("Redis client not connected")
 
@@ -139,13 +116,7 @@ class AsyncRedisCache:
 
     async def exists(self, key: str) -> bool:
         """
-        Check if key exists in cache.
-
-        Args:
-            key: Cache key
-
-        Returns:
-            True if key exists, False otherwise
+        Check whether a key exists in Redis, returning False on errors.
         """
         if not self.client:
             raise CacheError("Redis client not connected")
