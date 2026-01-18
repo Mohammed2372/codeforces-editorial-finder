@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 from loguru import logger
 import fitz  # PyMuPDF
 
-from config import get_settings
 from domain.models import TutorialData, TutorialFormat, Language
 from domain.exceptions import ParsingError
 
@@ -57,8 +56,7 @@ class TutorialParser:
         # Use JS rendering for blog pages (editorials are usually posted as blog entries)
         # which may load content dynamically
         if "/blog/" in url or "/contest/" in url:
-            settings = get_settings()
-            wait_time = settings.http_js_wait
+            wait_time = 5000  # Default JS wait time: 5000ms
             logger.info(f"Using JS rendering for blog/contest page (wait: {wait_time}ms)")
             html = await self.http.get_text_with_js(url, wait_time=wait_time)
         else:

@@ -11,9 +11,6 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Cache
-    cache_dir: str = Field(
-        default="~/.cache/codeforces-editorial", description="Directory for cache storage"
-    )
     cache_ttl_hours: int = Field(
         default=168,  # 7 days
         description="Cache TTL in hours",
@@ -21,11 +18,7 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379/0", description="Redis connection URL")
 
     # HTTP
-    http_timeout: int = Field(default=30, description="HTTP request timeout in seconds")
     http_retries: int = Field(default=3, description="Number of HTTP retry attempts")
-    http_js_wait: int = Field(
-        default=5000, description="Time to wait for JS content to load (milliseconds)"
-    )
     user_agent: str = Field(
         default="codeforces-editorial-finder/1.0", description="User agent for HTTP requests"
     )
@@ -41,12 +34,6 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
     )
-
-    @field_validator("cache_dir")
-    @classmethod
-    def expand_cache_dir(cls, v: str) -> str:
-        """Expand ~ in cache directory path."""
-        return str(Path(v).expanduser())
 
     @field_validator("log_file")
     @classmethod
@@ -66,11 +53,6 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid log level: {v}. Must be one of {valid_levels}")
         return v_upper
 
-    def get_cache_path(self) -> Path:
-        """Get cache directory as Path object, creating it if needed."""
-        cache_path = Path(self.cache_dir)
-        cache_path.mkdir(parents=True, exist_ok=True)
-        return cache_path
 
 
 # Singleton instance

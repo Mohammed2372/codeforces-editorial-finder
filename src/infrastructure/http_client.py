@@ -20,7 +20,7 @@ class AsyncHTTPClient:
         Initialize the client, falling back to configured timeout and user-agent when not provided.
         """
         settings = get_settings()
-        self.timeout = timeout or settings.http_timeout
+        self.timeout = timeout or 30  # Default timeout: 30 seconds
         self.user_agent = user_agent or settings.user_agent
         self.retries = settings.http_retries
 
