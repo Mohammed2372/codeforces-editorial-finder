@@ -34,11 +34,13 @@ def identifier():
 def extractor_factory():
     def _make(ai):
         return EditorialExtractor(ai)
+
     return _make
+
 
 @pytest.fixture
 def fake_ai():
     def _make(response=None, raise_exc=False, model="test-model"):
         return FakeAI(response=response, raise_exc=raise_exc, model=model)
-    return _make
 
+    return _make

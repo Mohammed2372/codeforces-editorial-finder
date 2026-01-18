@@ -1,8 +1,6 @@
 import pytest
 
 
-
-
 @pytest.mark.asyncio
 async def test_strips_front_matter_when_protocol_matches(
     extractor_factory, tutorial, identifier, fake_ai
