@@ -74,7 +74,9 @@ class AsyncOpenAIClient:
 
             response_text = response.choices[0].message.content
             if response_text is None:
-                logger.warning("Response content is None - reasoning model may need more max_tokens")
+                logger.warning(
+                    "Response content is None - reasoning model may need more max_tokens"
+                )
                 response_text = ""
 
             logger.debug(f"Received response ({len(response_text)} chars)")
