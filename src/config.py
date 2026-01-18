@@ -54,7 +54,6 @@ class Settings(BaseSettings):
         return v_upper
 
 
-
 # Singleton instance
 _settings: Optional[Settings] = None
 
