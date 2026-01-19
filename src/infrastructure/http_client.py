@@ -21,7 +21,7 @@ class AsyncHTTPClient:
         """
         settings = get_settings()
         self.timeout = timeout or 30  # Default timeout: 30 seconds
-        self.user_agent = user_agent or settings.user_agent
+        self.user_agent = user_agent or settings.user_agent or "codeforces-editorial-finder/1.0"
         self.retries = settings.http_retries
 
         # HTTP client using curl_cffi with browser impersonation
@@ -34,7 +34,11 @@ class AsyncHTTPClient:
         await self.close()
 
     async def close(self) -> None:
-        await self.client.close()
+        try:
+            await self.client.close()
+        except Exception as e:
+            logger.warning(f"Error during HTTP client cleanup: {e}")
+            # Ignore cleanup errors to prevent breaking dependency injection
 
     @retry(
         stop=stop_after_attempt(3),
@@ -84,45 +88,3 @@ class AsyncHTTPClient:
         """
         response = await self.get(url)
         return response.text if hasattr(response, "text") else response.content.decode("utf-8")
-
-    async def get_bytes(self, url: str) -> bytes:
-        response = await self.get(url)
-        return response.content
-
-    async def get_content_type(self, url: str) -> str:
-        response = await self.get(url)
-        return response.headers.get("content-type", "").lower()
-
-    async def get_text_with_js(self, url: str, wait_time: int = 3000) -> str:
-        """
-        Fetch a page using a headless browser to allow JavaScript-rendered content to load.
-        Use this for sites that populate data dynamically via JS.
-        """
-        logger.info(f"Fetching URL with JS rendering: {url} (wait: {wait_time}ms)")
-
-        try:
-            from playwright.async_api import async_playwright
-
-            async with async_playwright() as p:
-                # Launch browser in headless mode
-                browser = await p.chromium.launch(headless=True)
-                page = await browser.new_page(user_agent=self.user_agent)
-
-                # Navigate to page
-                await page.goto(url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
-
-                # Wait for dynamic content to load
-                await page.wait_for_timeout(wait_time)
-
-                # Get rendered HTML
-                content = await page.content()
-
-                # Cleanup
-                await browser.close()
-
-                logger.info(f"Successfully fetched URL with JS: {url} ({len(content)} chars)")
-                return content
-
-        except Exception as e:
-            logger.error(f"Failed to fetch URL with JS rendering: {url} - {e}")
-            raise NetworkError(f"Failed to fetch {url} with JS rendering: {e}") from e

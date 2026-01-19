@@ -1,18 +1,14 @@
 from litestar import Request, Response
 from litestar.status_codes import (
     HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
-    HTTP_503_SERVICE_UNAVAILABLE,
 )
 from loguru import logger
 
 from domain.exceptions import (
     CodeforcesEditorialError,
     URLParsingError,
-    EditorialNotFoundError,
-    ExtractionError,
     ParsingError,
     CacheError,
 )
@@ -25,16 +21,6 @@ def exception_to_http_response(request: Request, exc: Exception) -> Response[Err
     if isinstance(exc, URLParsingError):
         status_code = HTTP_400_BAD_REQUEST
         error_type = "URLParsingError"
-        detail = str(exc)
-
-    elif isinstance(exc, EditorialNotFoundError):
-        status_code = HTTP_404_NOT_FOUND
-        error_type = "EditorialNotFoundError"
-        detail = str(exc)
-
-    elif isinstance(exc, ExtractionError):
-        status_code = HTTP_422_UNPROCESSABLE_ENTITY
-        error_type = "ExtractionError"
         detail = str(exc)
 
     elif isinstance(exc, ParsingError):
